@@ -1,0 +1,86 @@
+#!/usr/bin/env python
+'''
+						######--------------CixoNotes--------------#####
+
+	aplikacja pozwala na tworzenie notatek jakie beda wyswietlane podczas logowania do systemu
+	notatki sa przechowywane w folderze jako pliki tekstowe, folder najlepiej zamontowac w NFS/Samba
+	dzieki czemu wyswietlaja sie na wszyskich komputerach, notatki mozna tworzyc na dowolnie do 
+	przodu, wyswietlac notatki z dowolnego dnia, ale domyslnie wyswietlona zostanie notka na dzien 
+	dzisiejszy 
+'''
+
+'''ten modul to modul glowny odpowiada za przetworzenie lini komend'''
+
+#moduly
+from sys import argv
+from datetime import datetime
+from CixoNotes import *
+
+#pliki konfiguracyjne
+sys.path.append(os.path.expanduser("~/.config/"))
+try:
+	from CixoNotesConfig import Config
+except:
+	print(Language.NOT_CONFIG_FILE)
+	exit()
+
+if Config.tryAllIsSet() is False or Language.tryAllIsSet() is False:
+	print(Language.CONFIG_FILE_ERROR)
+	exit()
+
+NotesClass.setConfig(Config, Language)
+
+#domyslne parametry skryptu
+read_write_mod = "read"
+
+notes = NotesSaver()
+notes.notes.setDate(datetime.now(), False)
+
+#analiza lini komend
+for arg_number in range(len(argv)):
+	
+	if argv[arg_number] in ("--help", "-h"):
+		print(Language.HELP_NOTE)
+		exit()
+	
+	if argv[arg_number] in ("--day", "-d"):
+		try:
+			notes.notes.setDate(argv[arg_number + 1])
+		except:
+			if arg_number + 1 == len(argv):
+				print(Language.NOT_DATE_SET)
+				exit()
+				
+			print(Language.BAD_DATE_FORMAT + argv[arg_number + 1])
+			exit()
+			
+	if argv[arg_number] in ("--mode", "-m"):
+		if arg_number + 1 == len(argv):
+			print(Language.NOT_MODE_SET)
+			exit()
+			
+		read_write_mod = argv[arg_number + 1]	
+
+#odczyt notatki z systemu plikow		
+notes.readNotes()	
+		
+#wybrana przez usera akcja	
+if read_write_mod == "read":
+	notes.notes.display()
+	exit()
+
+if read_write_mod == "write":
+	notes.writeNotes()
+	exit()
+	
+if read_write_mod == "add":
+	notes.addToNotes()
+	exit()
+	
+if read_write_mod == "drop":
+	notes.dropNotes()
+	exit()
+	
+print(Language.BAD_MODE_ERROR + read_write_mod)
+	
+

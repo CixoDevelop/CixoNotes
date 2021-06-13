@@ -1,0 +1,65 @@
+#!/usr/bin/env python
+
+'''
+						######--------------CixoNotesConfig--------------#####
+
+	Ten program odpowiada za przygotowanie konfiguracji dla dzialania cixo-notes
+	dla uzytkownika ktury ten sktypt wywola
+'''
+
+import os
+from CixoNotes.Language import Language
+
+home = os.path.expanduser("~/")
+home_config = os.path.expanduser("~/.config/")
+
+print(Language.CONFIG_FILE_HELLO)
+
+if os.path.isfile(home_config + "CixoNotesConfig.py"):
+	if input(Language.CONFIG_FILE_EXIST) == Language.CONFIRM_LETTER:
+		os.remove(home_config + "CixoNotesConfig.py")
+	else:
+		exit()
+	
+date_format = input(Language.DATE_FORMAT_CONFIG)
+date_format = date_format if date_format.split() != [] else "%Y-%m-%d"
+
+notes_dir = input(Language.NOTES_DIR + home + "CixoNotes/):")
+notes_dir = notes_dir if notes_dir.split() != [] else home + "CixoNotes/"
+
+if notes_dir[-1] != '/':
+	notes_dir = notes_dir + '/'
+		
+if os.path.isdir(notes_dir) is False:
+	print(Language.DIR_NOT_EXIST)
+	os.mkdir(notes_dir)
+		
+new_file = """
+'''
+	Plik konfiguracji CixoNotes, zawiera konfiguracje folderu w jakim przechowywane sa notatki 
+	oraz format daty w jakim ta zostanie wyswietlona
+	Opcje jakie mozna z jego pomoca zmienic to:
+	 * DATE_FORMAT = odpowiada za format zapisu daty jakiego uzywa aplikacja
+	 * NOTES_DIRECTORY - folder w jakim przechowywane sa notatki
+	Funckje:
+	 * tryAllIsSet() - sprawdza czy plik jest prawidlowo ustawiony
+'''
+
+class Config:
+	DATE_FORMAT = '""" + date_format + """'
+	NOTES_DIRECTORY = '""" + notes_dir + """'
+	
+	def tryAllIsSet() -> bool:
+		return  'NOTES_DIRECTORY' in vars(__class__) and\
+				'DATE_FORMAT' in vars(__class__) 
+"""
+
+try:
+	config_file = open(home_config + "CixoNotesConfig.py", "w")
+	config_file.write(new_file)
+	config_file.close()
+
+	print(Language.GOOD_APP_CONFIG)
+except:
+	print(Language.BAD_APP_CONFIG)
+
