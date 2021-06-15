@@ -12,7 +12,8 @@ if is_user_root; then
 		echo "Deinstalacja cixo-notes:"
 		remove_file "/bin/cixo-notes"
 		remove_file "/bin/cixo-notes-config"
-		remove_file "/bin/CixoNotes"
+		remove_file "/bin/CixoNotes" 2> /dev/null
+		remove_file "/bin/cixo_notes"
 	else
 		echo "Nie zainstalowano CixoNotes!"
 	fi

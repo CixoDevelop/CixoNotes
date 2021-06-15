@@ -1,65 +1,53 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 
 '''
-						######--------------CixoNotesConfig--------------#####
+		######--------------CixoNotesConfig--------------#####
 
 	Ten program odpowiada za przygotowanie konfiguracji dla dzialania cixo-notes
 	dla uzytkownika ktury ten sktypt wywola
 '''
 
-import os
-from CixoNotes.Language import Language
+import cixo_notes
+from pathlib import Path
+from configparser import ConfigParser
 
-home = os.path.expanduser("~/")
-home_config = os.path.expanduser("~/.config/")
+home = Path.home()
 
-print(Language.CONFIG_FILE_HELLO)
+notes_folder = Path(str(home), "CixoNotes")
+config = Path(str(home), ".config/cixo-notes.ini")
 
-if os.path.isfile(home_config + "CixoNotesConfig.py"):
-	if input(Language.CONFIG_FILE_EXIST) == Language.CONFIRM_LETTER:
-		os.remove(home_config + "CixoNotesConfig.py")
+print(cixo_notes.language.get("cixo-notes-config", "CONFIG_FILE_HELLO").replace("||", "\n"))
+
+if config.exists():
+	if input(cixo_notes.language.get("cixo-notes-config", "CONFIG_FILE_EXIST")) == cixo_notes.language.get("cixo-notes", "CONFIRM_LETTER"):
+		config.unlink()
 	else:
 		exit()
 	
-date_format = input(Language.DATE_FORMAT_CONFIG)
+date_format = input(cixo_notes.language.get("cixo-notes-config", "DATE_FORMAT_CONFIG"))
 date_format = date_format if date_format.split() != [] else "%Y-%m-%d"
 
-notes_dir = input(Language.NOTES_DIR + home + "CixoNotes/):")
-notes_dir = notes_dir if notes_dir.split() != [] else home + "CixoNotes/"
+#ini w ten sposon koduje %
+date_format = date_format.replace("%", "%%")
 
-if notes_dir[-1] != '/':
-	notes_dir = notes_dir + '/'
-		
-if os.path.isdir(notes_dir) is False:
-	print(Language.DIR_NOT_EXIST)
-	os.mkdir(notes_dir)
-		
-new_file = """
-'''
-	Plik konfiguracji CixoNotes, zawiera konfiguracje folderu w jakim przechowywane sa notatki 
-	oraz format daty w jakim ta zostanie wyswietlona
-	Opcje jakie mozna z jego pomoca zmienic to:
-	 * DATE_FORMAT = odpowiada za format zapisu daty jakiego uzywa aplikacja
-	 * NOTES_DIRECTORY - folder w jakim przechowywane sa notatki
-	Funckje:
-	 * tryAllIsSet() - sprawdza czy plik jest prawidlowo ustawiony
-'''
-
-class Config:
-	DATE_FORMAT = '""" + date_format + """'
-	NOTES_DIRECTORY = '""" + notes_dir + """'
+notes_folder_input = input(cixo_notes.language.get("cixo-notes-config", "NOTES_DIR").format(default_source = str(notes_folder)))
+if notes_folder_input.split() != []:
+	notes_folder = Path(notes_folder_input) 
 	
-	def tryAllIsSet() -> bool:
-		return  'NOTES_DIRECTORY' in vars(__class__) and\
-				'DATE_FORMAT' in vars(__class__) 
-"""
+if notes_folder.exists() is False:
+	print(cixo_notes.language.get("cixo-notes-config", "DIR_NOT_EXIST"))
+	notes_folder.mkdir(parents = True)
+		
+new_file = ConfigParser()
+new_file.add_section("cixo-notes")
+new_file.set("cixo-notes", "DATE_FORMAT", date_format)
+new_file.set("cixo-notes", "NOTES_DIRECTORY", str(notes_folder) + "/")
 
 try:
-	config_file = open(home_config + "CixoNotesConfig.py", "w")
-	config_file.write(new_file)
-	config_file.close()
-
-	print(Language.GOOD_APP_CONFIG)
+	with config.open("w") as config_file:
+		new_file.write(config_file)
+	print(cixo_notes.language.get("cixo-notes-config", "GOOD_APP_CONFIG"))
+	
 except:
-	print(Language.BAD_APP_CONFIG)
+	print(cixo_notes.language.get("cixo-notes-config", "BAD_APP_CONFIG"))
 

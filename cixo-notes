@@ -1,68 +1,58 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
+
 '''
 						######--------------CixoNotes--------------#####
 
-	aplikacja pozwala na tworzenie notatek jakie beda wyswietlane podczas logowania do systemu
-	notatki sa przechowywane w folderze jako pliki tekstowe, folder najlepiej zamontowac w NFS/Samba
-	dzieki czemu wyswietlaja sie na wszyskich komputerach, notatki mozna tworzyc na dowolnie do 
-	przodu, wyswietlac notatki z dowolnego dnia, ale domyslnie wyswietlona zostanie notka na dzien 
-	dzisiejszy 
+	Jezeli nie przeczytales readme.md nadrob je
+	To glowny modul aplikacji CixoNotes, odpowiada za interpretacje lini polecen
 '''
 
-'''ten modul to modul glowny odpowiada za przetworzenie lini komend'''
-
 #moduly
-from sys import argv
 from datetime import datetime
-from CixoNotes import *
+from pathlib import Path
+import cixo_notes, sys
 
-#pliki konfiguracyjne
-sys.path.append(os.path.expanduser("~/.config/"))
-try:
-	from CixoNotesConfig import Config
-except:
-	print(Language.NOT_CONFIG_FILE)
+if cixo_notes.config is None:
+	print(cixo_notes.language.get("cixo-notes","NOT_CONFIG_FILE"))
 	exit()
 
-if Config.tryAllIsSet() is False or Language.tryAllIsSet() is False:
-	print(Language.CONFIG_FILE_ERROR)
-	exit()
 
-NotesClass.setConfig(Config, Language)
+cixo_notes.notes_class.set_config(cixo_notes.config, cixo_notes.language)
 
 #domyslne parametry skryptu
 read_write_mod = "read"
 
-notes = NotesSaver()
-notes.notes.setDate(datetime.now(), False)
+notes = cixo_notes.notes_saver()
+notes.notes.set_date(datetime.now(), False)
 
 #analiza lini komend
-for arg_number in range(len(argv)):
+for arg_number in range(len(sys.argv)):
 	
-	if argv[arg_number] in ("--help", "-h"):
-		print(Language.HELP_NOTE)
+	if sys.argv[arg_number] in ("--help", "-h"):
+		print(cixo_notes.language.get("cixo-notes", "HELP_NOTE").replace("||", "\n").replace("**", "\t"))
 		exit()
 	
-	if argv[arg_number] in ("--day", "-d"):
+	if sys.argv[arg_number] in ("--day", "-d"):
 		try:
-			notes.notes.setDate(argv[arg_number + 1])
+			notes.notes.set_date(sys.argv[arg_number + 1])
 		except:
-			if arg_number + 1 == len(argv):
-				print(Language.NOT_DATE_SET)
+			if arg_number + 1 == len(sys.argv):
+				print(cixo_notes.language.get("cixo-notes", "NOT_DATE_SET"))
 				exit()
 				
-			print(Language.BAD_DATE_FORMAT + argv[arg_number + 1])
+			print(cixo_notes.language.get("cixo-notes", "BAD_DATE_FORMAT").format(date_format = sys.argv[arg_number + 1]))
 			exit()
 			
-	if argv[arg_number] in ("--mode", "-m"):
-		if arg_number + 1 == len(argv):
-			print(Language.NOT_MODE_SET)
+	if sys.argv[arg_number] in ("--mode", "-m"):
+		if arg_number + 1 == len(sys.argv):
+			print(cixo_notes.language.get("cixo-notes", "NOT_MODE_SET"))
 			exit()
 			
-		read_write_mod = argv[arg_number + 1]	
+		read_write_mod = sys.argv[arg_number + 1]	
 
 #odczyt notatki z systemu plikow		
-notes.readNotes()	
+notes.set_path()
+notes.read_notes()	
 		
 #wybrana przez usera akcja	
 if read_write_mod == "read":
@@ -70,17 +60,17 @@ if read_write_mod == "read":
 	exit()
 
 if read_write_mod == "write":
-	notes.writeNotes()
+	notes.write_notes()
 	exit()
 	
 if read_write_mod == "add":
-	notes.addToNotes()
+	notes.add_to_notes()
 	exit()
 	
 if read_write_mod == "drop":
-	notes.dropNotes()
+	notes.drop_notes()
 	exit()
 	
-print(Language.BAD_MODE_ERROR + read_write_mod)
+print(cixo_notes.language.get("cixo-notes", "BAD_MODE_ERROR").format(mode_input = read_write_mod))
 	
 

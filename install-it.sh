@@ -18,7 +18,7 @@ if is_user_root; then
 	echo 'Kopiowanie plików:'
 	copy_file "cixo-notes" "/bin/"
 	copy_file "cixo-notes-config" "/bin"
-	copy_file "CixoNotes" "/bin/"
+	copy_file "cixo_notes" "/bin/"
     exit 0
 else
     echo 'Musisz uruchomić skrypt jako root' >&2
